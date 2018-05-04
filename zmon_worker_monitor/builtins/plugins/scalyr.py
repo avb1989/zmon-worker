@@ -51,7 +51,7 @@ class ScalyrWrapper(object):
     def count(self, query, minutes=5):
         return self.timeseries(query, function='count', minutes=minutes, buckets=1, prio='low')
 
-    def logs(self, query, max_count=100, minutes=5, continuation_token=None):
+    def logs(self, query, max_count=100, minutes=5, continuation_token=None, columns=[]):
 
         if not query or not query.strip():
             raise CheckError('query "{}" is not allowed to be blank'.format(query))
@@ -65,6 +65,10 @@ class ScalyrWrapper(object):
             'priority': 'low'
         }
 
+        hasColumns = len(columns) > 0
+        if hasColumns:
+            val['columns'] = ','.join(columns)
+
         if continuation_token:
             val['continuationToken'] = continuation_token
 
@@ -76,7 +80,7 @@ class ScalyrWrapper(object):
 
         if 'matches' in j:
             new_continuation_token = j.get('continuationToken', None)
-            messages = [match['message'] for match in j['matches']]
+            messages = j['matches'] if hasColumns else [match['message'] for match in j['matches']]
             return {'messages': messages, 'continuation_token': new_continuation_token}
         if j.get('status', '').startswith('error'):
             raise CheckError(j['message'])
