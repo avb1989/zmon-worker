@@ -133,6 +133,34 @@ def fx_count(request):
         }
     ),
     (
+        {'query': 'filter-query', 'columns': 'colA'},
+        {
+            'matches': [{
+                'attributes': {
+                    'colA': 'value1'
+                }
+            }, {
+                'attributes': {
+                    'colA': 'value2'
+                }
+            }],
+            'status': 'success',
+            'continuationToken': 'some-new-token'
+        },
+        {
+            'messages': [{
+                'attributes': {
+                    'colA': 'value1'
+                }
+            }, {
+                'attributes': {
+                    'colA': 'value2'
+                }
+            }],
+            'continuation_token': 'some-new-token'
+        }
+    ),
+    (
         {'query': 'filter-query'},
         {'status': 'error/client', 'message': 'bad filter'},
         {'status': 'error/client', 'message': 'bad filter'},
@@ -306,7 +334,7 @@ def test_scalyr_logs(monkeypatch, fx_logs):
         if 'continuation_token' in kwargs:
             query['continuationToken'] = kwargs['continuation_token']
         if 'columns' in kwargs:
-            query['columns'] = ','.join(kwargs['columns'])
+            query['columns'] = ','.join(kwargs['columns']) if type(kwargs['columns']) is list else kwargs['columns']
 
         return query
 
